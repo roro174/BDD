@@ -91,11 +91,12 @@ ROWS IDENTIFIED BY '<patient>'
 (NISS, @date_de_naissance, genre, inami_medecin, inami_pharmacien, mail, nom, prenom, telephone)
 set date_de_naissance = str_to_date(@date_de_naissance, '%m/%d/%Y');
 
+drop table pharmacien;
 CREATE TABLE pharmacien(
 inami bigint,
 mail char(255),
 nom char(255),
-telephone char(255)
+tel bigint
 );
 
 LOAD XML
@@ -105,8 +106,9 @@ ROWS IDENTIFIED BY '<pharmacien>';
 
 /*Problème car le nombre d'attributs par tuples varie (voir comment faire ça)*/
 
+
 CREATE TABLE specialite(
-nom char(255),
+name char(255),
 medicament char(255)
 );
 LOAD XML
