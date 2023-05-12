@@ -103,16 +103,15 @@ INFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.0\\Uploads\\pharmaciens.xml'
 INTO TABLE pharmacien
 ROWS IDENTIFIED BY '<pharmacien>';
 
-/*Problème car le nombre d'attributs par tuples varie (voir comment faire ça)
+/*Problème car le nombre d'attributs par tuples varie (voir comment faire ça)*/
 
 CREATE TABLE specialite(
 nom char(255),
-systeme_anatomique char(255),
 medicament char(255)
 );
 LOAD XML
 INFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.0\\Uploads\\specialites.xml'
 INTO TABLE specialite
-ROWS IDENTIFIED BY '<specialite>';
-*/
+ROWS IDENTIFIED BY '<medicament>';
+
 
