@@ -8,7 +8,8 @@ medicament_nom_commercial char(255)  NULL,
 DCI char(255)  NULL,
 date_prescription date  NULL,
 date_vente date  NULL,
-duree_traitement int  NULL
+duree_traitement int  NULL,
+PRIMARY KEY (NISS_patient)
 );
 
 LOAD DATA
@@ -24,7 +25,8 @@ CREATE TABLE medicaments(
 DCI char(255),
 nom_commercial char(255),
 système_anatomique char (255),
-conditionnement int
+conditionnement int,
+PRIMARY KEY (DCI)
 );
 
 LOAD DATA
@@ -38,7 +40,8 @@ NISS bigint,
 date_diagnostic date,
 naissance date,
 pathology char(255),
-specialite char(255)
+specialite char(255),
+PRIMARY KEY (NISS)
 );
 
 LOAD XML
@@ -54,7 +57,8 @@ inami bigint,
 mail char(255),
 nom char(255),
 specialite char(255),
-telephone bigint
+telephone bigint,
+PRIMARY KEY (INAMI)
 );
 
 LOAD XML
@@ -64,7 +68,8 @@ ROWS IDENTIFIED BY '<medecin>';
 
 CREATE TABLE pathologies(
 pathology char(255),
-specialite char(255)
+specialite char(255),
+PRIMARY KEY (pathology)
 );
 
 LOAD DATA
@@ -81,7 +86,8 @@ inami_pharmacien bigint,
 mail char(255),
 nom char(255),
 prenom char(255),
-telephone bigint
+telephone bigint,
+PRIMARY KEY (NISS)
 );
 
 LOAD XML
@@ -96,7 +102,8 @@ CREATE TABLE pharmacien(
 inami bigint,
 mail char(255),
 nom char(255),
-tel bigint
+tel bigint,
+PRIMARY KEY (inami)
 );
 
 LOAD XML
@@ -109,7 +116,8 @@ ROWS IDENTIFIED BY '<pharmacien>';
 
 CREATE TABLE specialite(
 name char(255),
-medicament char(255)
+medicament char(255),
+PRIMARY KEY (name)
 );
 LOAD XML
 INFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.0\\Uploads\\specialites.xml'
