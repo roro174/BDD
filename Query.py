@@ -1,66 +1,71 @@
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QLabel, QSlider, QPushButton, QWidget, \
+    QComboBox, QFileDialog, QGroupBox, QGridLayout, QLineEdit
+from PyQt5.QtCore import Qt, QRect, pyqtSignal
+from PyQt5.QtGui import QPixmap, QColor, QPainter, QBrush, QPalette
+
+
 class Query:
-    def __init__(self, cnx, queryType):
+    def __init__(self, cnx, queryType, nbrParameter):
         self.cnx = cnx
         self.queryType = queryType
-    
+        self.nbrParameter = nbrParameter
+
+    def splitRequet(self, requet):
+        splitreq = requet.split(";")
+        for elem in splitreq:
+            elem = elem + ";"
+        return splitreq
 
     def execute(self, parametre):
+        cursor = self.cnx.cursor()
         match self.queryType:
-            case "1":
+            case 1:
                 with open('QueriesFile/query1.sql', 'r') as f:
-                    script = f.read()
-                    script = script.replace('%s', parametre)
-            case "2":
+                   script = f.read()
+            case 2:
                 with open('QueriesFile/query2.sql', 'r') as f:
                     script = f.read()
-                    script = script.replace('%s', parametre)                   
-            case "3":
+            case 3:
                 with open('QueriesFile/query3.sql', 'r') as f:
                     script = f.read()
-                    script = script.replace('%s', parametre)
-            case "4":
+            case 4:
                 with open('QueriesFile/query4.sql', 'r') as f:
                     script = f.read()
-                    script = script.replace('%s', parametre)
-            case "5":
+            case 5:
                 with open('QueriesFile/query5.sql', 'r') as f:
                     script = f.read()
-                    script = script.replace('%s', parametre)
-            case "6":
+            case 6:
                 with open('QueriesFile/query6.sql', 'r') as f:
                     script = f.read()
-                    script = script.replace('%s', parametre)
-            case "7":
+            case 7:
                 with open('QueriesFile/query7.sql', 'r') as f:
                     script = f.read()
-                    script = script.replace('%s', parametre)
-            case "8":
+            case 8:
                 with open('QueriesFile/query8.sql', 'r') as f:
                     script = f.read()
-                    script = script.replace('%s', parametre)
-            case "9":
+            case 9:
                 with open('QueriesFile/query9.sql', 'r') as f:
                     script = f.read()
-                    script = script.replace('%s', parametre)
-            case "10":
+            case 10:
                 with open('QueriesFile/query10.sql', 'r') as f:
                     script = f.read()
-                    script = script.replace('%s', parametre)
             case _:
                 if(self.queryType == "insérer"):
-                    cursor = self.cnx.cursor()
                     query = ("SELECT nom, prenom FROM table")
                     cursor.execute(query)
                 elif(self.queryType == "se connecter"):
-                    cursor = self.cnx.cursor()
                     query = ("SELECT nom, prenom FROM table")
                     cursor.execute(query)
-        cursor = self.cnx.cursor()
-        cursor.execute(script)
-        resultats = cursor.fetchall()
-        for resultat in resultats:
-            print(resultat[0], resultat[1])
-            #for (nom, prenom) in cursor:
-                # print("{} {}".format(nom, prenom))"""
+                return
+        for i in range(self.nbrParameter):
+            replaceValue = '$' + str(i+1)
+            script = script.replace(replaceValue, parametre[i])
+        splitreq = self.splitRequet(script)
+        for req in splitreq:
+            cursor.execute(req)
+        retValue = []
+        for x in cursor:
+            retValue.append(x)
 
-                
+        return retValue
+
