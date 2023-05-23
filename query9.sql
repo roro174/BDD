@@ -1,4 +1,12 @@
-select p.nom, p.prenom, dp.medicament_nom_commercial, COUNT(distinct dp.medecin) as nb_medecins_prescripteurs
+select p.nom, p.prenom, count(distinct dp.medecin) as nb_medecins_prescripteurs
 from patient p, dossiers_patients dp
 where p.NISS = dp.niss_patient
-group by p.niss, p.nom, p.prenom, dp.medicament_nom_commercial;
+group by p.nom, p.prenom
+order by p.nom;
+
+
+
+
+
+
+
