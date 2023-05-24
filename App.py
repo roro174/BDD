@@ -29,6 +29,7 @@ class MainWindow(QWidget):
         self.listParameter = []
         self.listInputButton = []
         self.pageWidget = []
+        self.labelWidget = []
         self.NISS = 0
         self.initUI()
         self.width = 1950
@@ -52,11 +53,11 @@ class MainWindow(QWidget):
             self.listButton.append(button)
 
     def getNbrParameters(self, queryNbr):
-        if queryNbr == 1 or queryNbr == 2 or queryNbr == 10:
+        if queryNbr == 1 or queryNbr == 10:
             return 1
         elif queryNbr == 4 or queryNbr == 5:
             return 2
-        elif queryNbr == 3 or queryNbr == 6 or queryNbr == 7 or queryNbr == 8 or queryNbr == 9:
+        elif queryNbr == 3 or queryNbr == 6 or queryNbr == 7 or queryNbr == 8 or queryNbr == 9 or queryNbr == 2:
             return 0
 
 
@@ -93,6 +94,7 @@ class MainWindow(QWidget):
         self.listInputButton[len(self.listInputButton) - 1].deleteLater()
         self.listInputButton.clear()
         query = Query(self.cnx, self.position, self.nbrParameters)
+        query = Query(self.cnx, self.position, self.nbrParameters)
         self.drawAnswer(query.execute(self.listParameter))
 
     def drawAnswer(self, listAnswer):
@@ -106,16 +108,22 @@ class MainWindow(QWidget):
                 buf = buf + str(listAnswer[i][j]) + ', '
             label = QLabel(buf, window)
             self.pageWidget.append(label)
-            label.move(200, 70+i*30)
+            label.move(100 +330 * ((70+i*30)//750), (70+i*30)%750)
         button = QPushButton('Retour au menu', self)
         button.setToolTip('Envoyer les paramètres')
         button.clicked.connect(self.returnMenu)
         button.resize(200, 50)
-        button.move(200, 700)
+        button.move(200, 800)
         self.pageWidget.append(button)
         self.showPage()
 
+    def deleteLabels(self):
+        for label in self.labelWidget:
+            label.deleteLater()
+        self.labelWidget.clear()
+
     def deletePage(self):
+        self.deleteLabels()
         for elem in self.pageWidget:
             elem.deleteLater()
         self.pageWidget.clear()
@@ -123,13 +131,15 @@ class MainWindow(QWidget):
     def showPage(self):
         for elem in self.pageWidget:
             elem.show()
+        for label in self.labelWidget:
+            label.show()
+
 
     def returnMenu(self):
         self.deletePage()
         self.showButton()
 
     def executeChange(self):
-        "UPDATE your_table SET column1 = 'new_value' WHERE condition_column = 'condition_value'"
         toChange = self.pageWidget[1].currentText()
         newValue = self.pageWidget[0].text()
         if toChange == 'Pharmacien':
@@ -277,8 +287,22 @@ class MainWindow(QWidget):
             elif len(self.pageWidget) > iter+4:
                 for i in range(iter+4,len(self.pageWidget)):
                     self.pageWidget[i].deleteLater()
-                    self.pageWidget.remove(self.pageWidget[i])
+                self.pageWidget = self.pageWidget[:iter+4]
+        self.deleteLabels()
+        self.createLabels(iter)
         self.showPage()
+
+    def createLabels(self, requete):
+        if requete == 4:
+            labels = ["Inami", "mail", "nom", "téléphone"]
+        elif requete == 5:
+            labels = ["Inami", "mail", "nom","spécialité", "téléphone"]
+        else:
+            labels = ["NISS", "date de naissance", "genre","Inami du médecin","Inami du pharmacien","mail","nom", "prénom", "téléphone"]
+        for i in range(len(labels)):
+            label = QLabel(labels[i], self)
+            label.move(80,225+i*70)
+            self.labelWidget.append(label)
 
 
     def insertData(self):
@@ -335,7 +359,11 @@ class MainWindow(QWidget):
         sender = self.sender()
         self.position = int((sender.pos().y()-70)//70+1)
         self.nbrParameters = self.getNbrParameters(self.position)
-        if self.position < 11:
+        if self.position < 11 and self.nbrParameters ==0:
+            self.hideButton()
+            query = Query(self.cnx, self.position, self.nbrParameters)
+            self.drawAnswer(query.execute(self.listParameter))
+        elif self.position < 11:
             self.hideButton()
             self.inputParameter()
         else:
