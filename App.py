@@ -68,6 +68,8 @@ class MainWindow(QWidget):
             button.resize(1500,50)
             button.move(200,40+i*70)
             button.clicked.connect(self.onClick)
+            if i < 10:  # permet de faire une différence entre les 10 requêtes sql et les opérations de l'application
+                button.setStyleSheet("background-color:blue")
             self.listButton.append(button)
 
     def getNbrParameters(self, queryNbr):
@@ -160,13 +162,13 @@ class MainWindow(QWidget):
                 buf = buf + str(listAnswer[i][j]) + ', '
             label = QLabel(buf, window)
             self.pageWidget.append(label)
-            label.move(100 +330 * ((70+i*30)//750), (70+i*30)%750)
+            label.move(100 +330 * ((70+i*20)//850), (70+i*20)%850)
         # création d'un bouton pour revenir au menu
         button = QPushButton('Retour au menu', self)
         button.setToolTip('Envoyer les paramètres')
         button.clicked.connect(self.returnMenu)
         button.resize(200, 50)
-        button.move(200, 800)
+        button.move(200, 900)
         self.pageWidget.append(button)
         self.showPage()  # affichage de la page
 
@@ -267,7 +269,7 @@ class MainWindow(QWidget):
         button.move(200, 700)
         # selection de la date de diagnostique et du nom de la pathologie pour le patient connecté
         self.cursor.execute("SELECT date_diagnostic, pathology FROM ProjetDB.diagnostiques WHERE NISS = %s", (self.NISS,))
-        label = QLabel("Vos diagnostiques", window)
+        label = QLabel("Vos diagnostiques :", window)
         label.move(200, 100)
         self.pageWidget.append(label)
         i =0
@@ -278,6 +280,19 @@ class MainWindow(QWidget):
             label.move(200, 150 + i * 20)
             self.pageWidget.append(label)
             i += 1
+        labelReference = QLabel("Vos Références :", window)
+        labelReference.move(200, 150 + i * 20)
+        i +=1
+        self.cursor.execute("SELECT inami_medecin, inami_pharmacien FROM ProjetDB.patient WHERE NISS = %s",
+                            (self.NISS,))
+        for elem in self.cursor:
+            # affichage des résultats
+            buff = "L'INAMI de votre médecin est " + str(elem[0]) + " et l'INAMI de votre pharmacien est " + str(elem[1])
+            label = QLabel(buff, window)
+            label.move(200, 150 + i * 20)
+            self.pageWidget.append(label)
+            i += 1
+        self.pageWidget.append(labelReference)
         self.pageWidget.append(button)
         self.showPage()
 
@@ -426,26 +441,30 @@ class MainWindow(QWidget):
         méthode qui réalise la requête sql qui ajpoute un élément dans la DB
         :return: void
         """
+        check = False
         ValueToInsert = []
         for i in range(4, len(self.pageWidget)):
+            if self.pageWidget[i].text() != "":
+                check = True
             ValueToInsert.append(self.pageWidget[i].text())   # récupération des paramètre
-        if self.pageWidget[0].currentText() =="Patient":   # selon la table dans laquelle on veut ajouter
-            # transformation en bon type pour certains paramètres
-            ValueToInsert[0] = int(ValueToInsert[0])
-            ValueToInsert[2] = int(ValueToInsert[2])
-            ValueToInsert[8] = int(ValueToInsert[8])
-            ValueToInsert[3] = int(ValueToInsert[3])
-            # réalisation de la requête
-            self.cursor.execute("INSERT INTO ProjetDB.patient (NISS, date_de_naissance, genre,inami_medecin, inami_pharmacien, mail, nom, prenon, telephone) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)", ValueToInsert)
-        elif self.pageWidget[0].currentText() =="Médecin":
-            ValueToInsert[0] = int(ValueToInsert[0])
-            ValueToInsert[4] = int(ValueToInsert[4])
-            self.cursor.execute("INSERT INTO ProjetDB.medecins (inami, mail, nom, specialite,telephone) VALUES(%s,%s,%s,%s,%s)",ValueToInsert)
-        else:
-            ValueToInsert[0]= int(ValueToInsert[0])
-            ValueToInsert[3] = int(ValueToInsert[3])
-            self.cursor.execute("INSERT INTO ProjetDB.pharmacien (inami, mail, nom, telephone) VALUES(%s,%s,%s,%s)", ValueToInsert)
-        cnx.commit()   # commit des changements
+        if check:
+            if self.pageWidget[0].currentText() =="Patient":   # selon la table dans laquelle on veut ajouter
+                # transformation en bon type pour certains paramètres
+                ValueToInsert[0] = int(ValueToInsert[0])
+                ValueToInsert[2] = int(ValueToInsert[2])
+                ValueToInsert[8] = int(ValueToInsert[8])
+                ValueToInsert[3] = int(ValueToInsert[3])
+                # réalisation de la requête
+                self.cursor.execute("INSERT INTO ProjetDB.patient (NISS, date_de_naissance, genre,inami_medecin, inami_pharmacien, mail, nom, prenon, telephone) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)", ValueToInsert)
+            elif self.pageWidget[0].currentText() =="Médecin":
+                ValueToInsert[0] = int(ValueToInsert[0])
+                ValueToInsert[4] = int(ValueToInsert[4])
+                self.cursor.execute("INSERT INTO ProjetDB.medecins (inami, mail, nom, specialite,telephone) VALUES(%s,%s,%s,%s,%s)",ValueToInsert)
+            else:
+                ValueToInsert[0]= int(ValueToInsert[0])
+                ValueToInsert[3] = int(ValueToInsert[3])
+                self.cursor.execute("INSERT INTO ProjetDB.pharmacien (inami, mail, nom, telephone) VALUES(%s,%s,%s,%s)", ValueToInsert)
+            cnx.commit()   # commit des changements
 
     def addInfo(self):
         """
@@ -491,6 +510,8 @@ class MainWindow(QWidget):
         self.deleteLabels()   # suppression des anciens résultats
         if self.pageWidget[2].currentText() == "Médecin":
             self.cursor.execute("SELECT * FROM ProjetDB.medecins WHERE specialite = %s",(specialite,))  # recherche et selection dans la DB
+        elif self.pageWidget[2].currentText() == "Pathologie":
+            self.cursor.execute("SELECT * FROM ProjetDB.specialite WHERE medicament = %s",(specialite,))  # recherche et selection dans la DB
         else:
             self.cursor.execute("SELECT * FROM ProjetDB.medicaments WHERE système_anatomique = %s",(specialite,))  # recherche et selection dans la DB
         i =0
@@ -528,8 +549,9 @@ class MainWindow(QWidget):
         self.pageWidget.append(button)
         # Création de la combo box qui permet de choisir quelle recherche faire
         comboBox = QComboBox(self)
-        comboBox.addItem("médicament")
+        comboBox.addItem("Médicament")
         comboBox.addItem("Médecin")
+        comboBox.addItem("Pathologie")
         comboBox.move(50, 100)
         comboBox.resize(200, 50)
         self.pageWidget.append(comboBox)
@@ -538,6 +560,9 @@ class MainWindow(QWidget):
         inputBox.resize(200, 50)
         inputBox.move(270, 100)
         self.pageWidget.append(inputBox)
+        label = QLabel("Entrez une spécialité pour un médecin et un système anatomique pour une spécialité ou un médicament :",window)
+        label.move(50, 70)
+        self.pageWidget.append(label)
         self.showPage()
 
 
@@ -547,6 +572,7 @@ class MainWindow(QWidget):
         méthode qui traite le fait d'appuyer sur un des boutons du menu principal
         :return: void
         """
+        self.listParameter.clear()
         sender = self.sender()                                            # récupère l'objet sur lequel on a cliqué
         self.position = int((sender.pos().y()-40)//70+1)                  # récupère l'indice de la position de l'ojet
         self.nbrParameters = self.getNbrParameters(self.position)         # détermine le nombre de paramètre de la requête
