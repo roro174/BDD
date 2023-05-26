@@ -1,3 +1,10 @@
+"""
+*noms: Fatima Ouchen, Lina Mahyo, Rodolphe Prévot
+*date: 26/05/2023
+*contenu: projet d'os 2 qui traite: des requêtes à faire sur une base de données/une division en serveur et clients, chacun pris en charge par un thread/ bash
+"""
+
+
 import sys
 import mysql.connector
 from Query import *
@@ -32,13 +39,11 @@ class MainWindow(QWidget):
                             "faire une recherche"]
         self.listButton = []  # liste qui contient les boutons du menu
         self.listParameter = []  # liste qui contient les paramètres de la requête
-        self.listInputButton = []  #
+        self.listInputButton = []
         self.pageWidget = []
         self.labelWidget = []
-        self.NISS = 0
         self.initUI()
-        self.width = 1950
-        self.height = 980
+        self.NISS = 0
         self.nbrParameters = 0
         self.position = 0
 
@@ -97,15 +102,21 @@ class MainWindow(QWidget):
             self.listButton[i].show()
 
     def inputParameter(self):
+        """
+        méthode qui permet à l'utilisateur d'entrer ses paramètres
+        :return: void
+        """
         label = QLabel("Entrez vos paramètres :", window)
         label.move(150,35)
         self.pageWidget.append(label)
+        # création du nombre suffisant d'inputBox
         for i in range(self.nbrParameters):
             inputBox = QLineEdit(self)
             inputBox.resize(450,50)
             inputBox.move(200, 70+i*70)
             inputBox.show()
             self.listInputButton.append(inputBox)
+        # création du bouton de validation des paramètres
         button = QPushButton('ok', self)
         button.setToolTip('Envoyer les paramètres')
         button.move(200, 700)
@@ -117,21 +128,32 @@ class MainWindow(QWidget):
 
 
     def doneClick(self):
-        self.deletePage()
+        """
+        méthode qui récupère les paramètres pour les requêtes
+        :return: void
+        """
+        self.deletePage()  # vide la page
+        # récupération des paramètres
         for i in range(len(self.listInputButton) - 1):
             self.listParameter.append(self.listInputButton[i].text())
             self.listInputButton[i].deleteLater()
         self.listInputButton[len(self.listInputButton) - 1].deleteLater()
         self.listInputButton.clear()
-        query = Query(self.cnx, self.position, self.nbrParameters)
+        # réalisation de la requête
         query = Query(self.cnx, self.position, self.nbrParameters)
         self.drawAnswer(query.execute(self.listParameter))
 
     def drawAnswer(self, listAnswer):
+        """
+        méthode qui affiche les résultats de la requête
+        :param listAnswer: liste contenant les résultats d'une requête
+        :return: void
+        """
         label = QLabel("Vos résultats :", window)
         self.pageWidget.append(label)
         label.move(150, 7)
         label.show()
+        # formatation des résultats
         for i in range(len(listAnswer)):
             buf =''
             for j in range(len(listAnswer[i])):
@@ -139,44 +161,65 @@ class MainWindow(QWidget):
             label = QLabel(buf, window)
             self.pageWidget.append(label)
             label.move(100 +330 * ((70+i*30)//750), (70+i*30)%750)
+        # création d'un bouton pour revenir au menu
         button = QPushButton('Retour au menu', self)
         button.setToolTip('Envoyer les paramètres')
         button.clicked.connect(self.returnMenu)
         button.resize(200, 50)
         button.move(200, 800)
         self.pageWidget.append(button)
-        self.showPage()
+        self.showPage()  # affichage de la page
 
     def deleteLabels(self):
+        """
+        méthode qui supprime les textes qui peuvent changer selon les actions de l'utilisateur
+        :return: void
+        """
         for label in self.labelWidget:
             label.deleteLater()
         self.labelWidget.clear()
 
     def deletePage(self):
-        self.deleteLabels()
-        for elem in self.pageWidget:
+        """
+        méthode qui supprime tous les widgets présents sur la page
+        :return: void
+        """
+        self.deleteLabels()  # supprime les textes
+        for elem in self.pageWidget:  # supprime les boutons, comboBox, ect...
             elem.deleteLater()
-        self.pageWidget.clear()
+        self.pageWidget.clear()   # vide la liste
 
     def showPage(self):
-        for elem in self.pageWidget:
+        """
+        méthode qui permet d'afficher la nouvelle page
+        :return: void
+        """
+        for elem in self.pageWidget:   # affiche les widgets fixes de la pages
             elem.show()
-        for label in self.labelWidget:
+        for label in self.labelWidget:  # affiche les textes qui peuvent changer selon les actions de l'utilisateur
             label.show()
 
 
     def returnMenu(self):
+        """
+        méthode qui permet de retourner au menu principal
+        :return: void
+        """
         self.deletePage()
         self.showButton()
 
     def executeChange(self):
-        toChange = self.pageWidget[1].currentText()
-        newValue = self.pageWidget[0].text()
+        """
+        méthode qui réalise le changement de médecin ou pharmacien de référence
+        :return: void
+        """
+        toChange = self.pageWidget[1].currentText()  # récupération du nom de la table
+        newValue = self.pageWidget[0].text()   # récupération du nouvel INAMI
         if toChange == 'Pharmacien':
             self.cursor.execute("UPDATE ProjetDB.patient SET inami_pharmacien = %s WHERE NISS = %s", (newValue, self.NISS,))
         else:
             self.cursor.execute("UPDATE ProjetDB.patient SET inami_medecin = %s WHERE NISS = %s", (newValue, self.NISS,))
-        self.cnx.commit()
+        self.cnx.commit()   # commit des changements
 
 
     def modifyData(self):
@@ -440,14 +483,18 @@ class MainWindow(QWidget):
 
 
     def search(self):
-        specialite = self.pageWidget[3].text()
-        print(specialite)
-        self.deleteLabels()
+        """
+        méthode qui exécute la recherche
+        :return: void
+        """
+        specialite = self.pageWidget[3].text()   # récupération du filtre
+        self.deleteLabels()   # suppression des anciens résultats
         if self.pageWidget[2].currentText() == "Médecin":
             self.cursor.execute("SELECT * FROM ProjetDB.medecins WHERE specialite = %s",(specialite,))  # recherche et selection dans la DB
         else:
             self.cursor.execute("SELECT * FROM ProjetDB.medicaments WHERE système_anatomique = %s",(specialite,))  # recherche et selection dans la DB
         i =0
+        # récupération des résultats
         for selected in self.cursor:
             buf = ""
             for elem in selected:
@@ -457,7 +504,7 @@ class MainWindow(QWidget):
             label.move(200, 200 + i * 30)
             i +=1
             self.labelWidget.append(label)
-        self.showPage()
+        self.showPage()   # affichage
 
 
     def makeASearch(self):
