@@ -162,7 +162,7 @@ class MainWindow(QWidget):
                 buf = buf + str(listAnswer[i][j]) + ', '
             label = QLabel(buf, window)
             self.pageWidget.append(label)
-            label.move(100 +330 * ((70+i*20)//850), (70+i*20)%850)
+            label.move(50 +330 * ((70+i*20)//850), (70+i*20)%850)
         # création d'un bouton pour revenir au menu
         button = QPushButton('Retour au menu', self)
         button.setToolTip('Envoyer les paramètres')
