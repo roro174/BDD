@@ -1,6 +1,7 @@
-select distinct m.nom, m.specialite, group_concat(distinct dp.medicament_nom_commercial separator ', ') as medicaments_prescrits
-from medecins m, specialite s, dossiers_patients dp
-where m.specialite = s.name and m.inami = dp.inami_medecin and dp.medicament_nom_commercial 
-not in
-(select medicament from specialite where name = m.specialite) 
-group by m.nom, m.specialite;
+select distinct m.inami, m.nom, m.specialite
+from medecins m
+inner join dossiers_patients dp on m.inami = dp.inami_medecin
+inner join medicaments me on dp.medicament_nom_commercial = me.nom_commercial
+inner join specialite s on me.système_anatomique = s.medicament
+where s.name <> m.specialite
+order by m.nom;
